@@ -17,9 +17,9 @@ import (
 
 func main() {
 
-	fmt.Println("Welcome to Terminal Sudoku. Let's begin\n")
+	fmt.Println("Welcome to Terminal Sudoku. Let's begin")
 
-	libhelp.ResizeTerm("18", "40")
+	//libhelp.ResizeTerm("18", "40")
 
 	// Initialize main game board and board var to ptr to 2d array
 	_board := [9][9]int{}
@@ -28,10 +28,13 @@ func main() {
 	libhelp.FillBoard_junk(board)
 	libhelp.PrintBoard(board)
 	
+	if libhelp.CheckBoard_valid(board) {
+		fmt.Println("valid board")
+	}
 
-	var input string
-	fmt.Print("Press enter to continue...")
-	fmt.Scanln(&input)
+	//var input string
+	//fmt.Print("Press enter to continue...")
+	//fmt.Scanln(&input)
 	
 	libhelp.ResizeTerm("24", "80")
 
