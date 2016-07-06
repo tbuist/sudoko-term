@@ -8,13 +8,33 @@ import(
 	"strconv"
 	"bytes"
 	"strings"
+	"bufio"
+	"os"
 )
 
+
+// KEEP THIS 1-INDEXED
 type Command struct {
-	cmd int // 0 = mark, 1 = erase, 2 = check, 3 = quit, 4 = invalid
-	val int
-	row int
-	col int
+	Cmd int // 0 = mark, 1 = erase, 2 = check, 3 = quit, 4 = invalid
+	Val int
+	Row int
+	Col int
+}
+
+type Board struct {
+	Arr [9][9]int
+	Done bool
+}
+
+func Board_default() *Board {
+	var board Board
+	for i := 0; i < 9; i++ {
+		for j := 0; j < 9; j++ {
+			board.Arr[i][j] = -1
+		}
+	}
+	board.Done = false
+	return &board
 }
 
 func ResizeTerm(height string, width string) {
@@ -25,17 +45,17 @@ func ResizeTerm(height string, width string) {
 	}
 }
 
-func PrintBoard(board *[9][9]int) {
+func PrintBoard(board *Board) {
 	var buffer bytes.Buffer
 	tmp := "\033[4m                         \033[0m"
 	fmt.Println(tmp)
 
 
 	// for each roach
-	for i := range *board {
+	for i := range (*board).Arr {
 		// first border
 		buffer.WriteString("|")
-		for j, v := range (*board)[i] {
+		for j, v := range (*board).Arr[i] {
 			if (j+1) % 3 == 0 {
 				buffer.WriteString(fmt.Sprintf(" %v |", v))
 			} else {
@@ -55,25 +75,25 @@ func PrintBoard(board *[9][9]int) {
 }
 
 // not a valid board
-func FillBoard_junk(board *[9][9]int) {
+func FillBoard_junk(board *Board) {
 	//rand.Seed(time.Now().UnixNano())
-	for i := range *board {
-		for j := range (*board)[i] {
+	for i := range (*board).Arr {
+		for j := range (*board).Arr[i] {
 			//tmp := rand.Intn(9) + 1
-			(*board)[i][j] = -1
+			(*board).Arr[i][j] = -1
 		}
 	}
 }
 
 // returns (true, _) if valid, returns (true, 9) if complete
-func CheckRow(board *[9][9]int, row int) (bool, int) {
+func CheckRow(board *Board, row int) (bool, int) {
 	if 0 > row || row > 8 {
 		return false, -1
 	}
 
 	count := 0
 	m := make(map[int]int)
-	for i, v := range (*board)[row] {
+	for i, v := range (*board).Arr[row] {
 		_, exists := m[v]
 		if v != -1 && !exists {
 			m[i] = v
@@ -86,28 +106,30 @@ func CheckRow(board *[9][9]int, row int) (bool, int) {
 	return true, count
 }
 
-func CheckCol(board *[9][9]int, col int) (bool, int) {
+// returns (true, _) if valid, returns (true, 9) if complete
+func CheckCol(board *Board, col int) (bool, int) {
 	if 0 > col || col > 8 {
 		return false, -1
 	}
 
 	count := 0
-	m := make(map[int]int)
+	arr := [9]int{-1,-1,-1,-1,-1,-1,-1,-1,-1}
+
 	for i := 0; i < 9; i++ {
-		_, exists := m[(*board)[i][col]]
-		if (*board)[i][col] != -1 && !exists {
-			m[i] = (*board)[i][col]
+		tmp := (*board).Arr[i][col]
+		if tmp != -1 && arr[i] == -1 {
+			arr[i] = tmp
 			count++
 		}
-		if (*board)[i][col] != -1 && exists {
+		if tmp != -1 && arr[i] != -1 {
 			return false, count
 		}
+
 	}
 	return true, count
-
 }
 
-func CheckBoard_valid(board *[9][9]int) bool {
+func CheckBoard_valid(board *Board) bool {
 	for i := 0; i < 9; i++ {
 		row_val, _ := CheckRow(board, i)
 		col_val, _ := CheckCol(board, i)
@@ -119,7 +141,7 @@ func CheckBoard_valid(board *[9][9]int) bool {
 	return true
 }
 
-func CheckBoard_complete(board *[9][9]int) bool {
+func CheckBoard_complete(board *Board) bool {
 	for i := 0; i < 9; i++ {
 		row_val, row_count := CheckRow(board, i)
 		col_val, col_count := CheckCol(board, i)
@@ -134,10 +156,11 @@ func CheckBoard_complete(board *[9][9]int) bool {
 func ReadCommand() *Command {
 	var cmd Command
 
+	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Command: ")
-	var input string
-	fmt.Scanln(&input)
-	args := strings.Split(input, " ")
+	text, _ := reader.ReadString('\n')
+	text = strings.Trim(text, "\n")
+	args := strings.Split(text, " ")
 
 	// mark command
 	switch len(args) {
@@ -146,10 +169,10 @@ func ReadCommand() *Command {
 			row, err2 := strconv.Atoi(args[2])
 			col, err3 := strconv.Atoi(args[3])
 			if args[0] == "m" && inRange(val, 1, 9) && inRange(row, 1, 9) && inRange(col, 1, 9) && err1 == nil && err2 == nil && err3 == nil {
-				cmd.cmd = 0
-				cmd.val = val
-				cmd.row = row
-				cmd.col = col
+				cmd.Cmd = 0
+				cmd.Val = val
+				cmd.Row = row
+				cmd.Col = col
 				return &cmd
 			}
 			fallthrough
@@ -157,46 +180,46 @@ func ReadCommand() *Command {
 			row, err1 := strconv.Atoi(args[1])
 			col, err2 := strconv.Atoi(args[2])
 			if args[0] == "e" && inRange(row, 1, 9) && inRange(col, 1, 9) && err1 == nil && err2 == nil {
-				cmd.cmd = 1
-				cmd.val = -1
-				cmd.row = row
-				cmd.col = col
+				cmd.Cmd = 1
+				cmd.Val = -1
+				cmd.Row = row
+				cmd.Col = col
 				return &cmd
 			}
 			fallthrough
 		case 1:
 			switch args[0] {
 				case "c":
-					cmd.cmd = 2
-					cmd.val = -1
-					cmd.row = -1
-					cmd.col = -1
+					cmd.Cmd = 2
+					cmd.Val = -1
+					cmd.Row = -1
+					cmd.Col = -1
 					return &cmd
 				case "h":
-					cmd.cmd = 3
-					cmd.val = -1
-					cmd.row = -1
-					cmd.col = -1
+					cmd.Cmd = 3
+					cmd.Val = -1
+					cmd.Row = -1
+					cmd.Col = -1
 					return &cmd
 				case "q":
-					cmd.cmd = 4
-					cmd.val = -1
-					cmd.row = -1
-					cmd.col = -1
+					cmd.Cmd = 4
+					cmd.Val = -1
+					cmd.Row = -1
+					cmd.Col = -1
 					return &cmd
 			}
 			fallthrough
 		default:
-			fmt.Println("Invalid command\n")
-			return ReadCommand()
+			fmt.Print("Invalid command")
+			return nil
 	}
 }
 
 func PrintInstructions() {
 	fmt.Println("Instructions:")
-	fmt.Println("	1. Comands")
-	fmt.Println("		a. \"m 3 4 5\" marks [4][5] as a 3")
-	fmt.Println("		b. \"e 4 5\" erases [4][5]")
+	fmt.Println("	1. Commands")
+	fmt.Println("		a. \"m <val> <row> <col>\" marks [<row>][<col>] as a <val>")
+	fmt.Println("		b. \"e <row> <col>\" erases [<row>][<col>]")
 	fmt.Println("		c. \"c\" checks board for validity/complete")
 	fmt.Println("		d. \"h\" prints this again")
 	fmt.Println("		e. \"q\" quits")

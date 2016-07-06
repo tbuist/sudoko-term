@@ -10,7 +10,6 @@ go run sudoku.go
 ```
 
 ### Todo
-* Board print
 * User commands
 * Board checking
 * Menu
