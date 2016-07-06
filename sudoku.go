@@ -1,9 +1,9 @@
-/* Terminal sudoku written in Golang
+/* Terminal sudoku written in Go
  *
  * Author:
  *		Taylor Buist - tbuist@umich.edu
  * Latest revision:
- *		July 05, 2016
+ *		July 06, 2016
  */
 
 package main
@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("Welcome to Terminal Sudoku. Let's begin")
 	libhelp.PrintInstructions()
 
-	libhelp.ResizeTerm("12", "40")
+	//libhelp.ResizeTerm("12", "40")
 
 	// Initialize main game board and board var to ptr to 2d array
 	board := libhelp.Board_default()
@@ -42,6 +42,7 @@ func main() {
 				board.Arr[cmd.Row-1][cmd.Col-1] = cmd.Val
 				row_good, _ := libhelp.CheckRow(board, cmd.Row-1)
 				col_good, _ := libhelp.CheckCol(board, cmd.Col-1)
+				fmt.Println(row_good, col_good)
 				if !row_good || !col_good {
 					fmt.Println("Invalid choice")
 					board.Arr[cmd.Row-1][cmd.Col-1] = tmp
@@ -77,6 +78,6 @@ func main() {
 		}
 	}
 
-	libhelp.ResizeTerm("24", "80")
+	//libhelp.ResizeTerm("24", "80")
 
 }

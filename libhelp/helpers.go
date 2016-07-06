@@ -13,7 +13,7 @@ import(
 )
 
 
-// KEEP THIS 1-INDEXED
+// 1-indexed?
 type Command struct {
 	Cmd int // 0 = mark, 1 = erase, 2 = check, 3 = quit, 4 = invalid
 	Val int
@@ -117,16 +117,23 @@ func CheckCol(board *Board, col int) (bool, int) {
 
 	for i := 0; i < 9; i++ {
 		tmp := (*board).Arr[i][col]
-		if tmp != -1 && arr[i] == -1 {
-			arr[i] = tmp
-			count++
-		}
-		if tmp != -1 && arr[i] != -1 {
-			return false, count
-		}
 
+		if tmp != -1 {
+			if arr[tmp-1] == -1 {
+				arr[tmp-1] = tmp
+				count++
+			}
+			if arr[tmp-1] > -1 {
+				return false, count
+			}	
+		}
 	}
 	return true, count
+}
+
+func CheckSquare(board *Board, row int, col int) (bool, int) {
+	
+	return true, -1
 }
 
 func CheckBoard_valid(board *Board) bool {
