@@ -5,10 +5,17 @@ import(
 	"os/exec"
 	//"math/rand"
 	//"time"
-	_"strconv"
+	"strconv"
 	"bytes"
 	"strings"
 )
+
+type Command struct {
+	cmd int // 0 = mark, 1 = erase, 2 = check, 3 = quit, 4 = invalid
+	val int
+	row int
+	col int
+}
 
 func ResizeTerm(height string, width string) {
 	cmd := exec.Command("resize", "-s", height, width)
@@ -122,4 +129,80 @@ func CheckBoard_complete(board *[9][9]int) bool {
 		}
 	}
 	return true
+}
+
+func ReadCommand() *Command {
+	var cmd Command
+
+	fmt.Print("Command: ")
+	var input string
+	fmt.Scanln(&input)
+	args := strings.Split(input, " ")
+
+	// mark command
+	switch len(args) {
+		case 4:
+			val, err1 := strconv.Atoi(args[1])
+			row, err2 := strconv.Atoi(args[2])
+			col, err3 := strconv.Atoi(args[3])
+			if args[0] == "m" && inRange(val, 1, 9) && inRange(row, 1, 9) && inRange(col, 1, 9) && err1 == nil && err2 == nil && err3 == nil {
+				cmd.cmd = 0
+				cmd.val = val
+				cmd.row = row
+				cmd.col = col
+				return &cmd
+			}
+			fallthrough
+		case 3:
+			row, err1 := strconv.Atoi(args[1])
+			col, err2 := strconv.Atoi(args[2])
+			if args[0] == "e" && inRange(row, 1, 9) && inRange(col, 1, 9) && err1 == nil && err2 == nil {
+				cmd.cmd = 1
+				cmd.val = -1
+				cmd.row = row
+				cmd.col = col
+				return &cmd
+			}
+			fallthrough
+		case 1:
+			switch args[0] {
+				case "c":
+					cmd.cmd = 2
+					cmd.val = -1
+					cmd.row = -1
+					cmd.col = -1
+					return &cmd
+				case "h":
+					cmd.cmd = 3
+					cmd.val = -1
+					cmd.row = -1
+					cmd.col = -1
+					return &cmd
+				case "q":
+					cmd.cmd = 4
+					cmd.val = -1
+					cmd.row = -1
+					cmd.col = -1
+					return &cmd
+			}
+			fallthrough
+		default:
+			fmt.Println("Invalid command\n")
+			return ReadCommand()
+	}
+}
+
+func PrintInstructions() {
+	fmt.Println("Instructions:")
+	fmt.Println("	1. Comands")
+	fmt.Println("		a. \"m 3 4 5\" marks [4][5] as a 3")
+	fmt.Println("		b. \"e 4 5\" erases [4][5]")
+	fmt.Println("		c. \"c\" checks board for validity/complete")
+	fmt.Println("		d. \"h\" prints this again")
+	fmt.Println("		e. \"q\" quits")
+}
+
+// inclusive
+func inRange(num int, left int, right int) bool {
+	return num >= left && num <= right
 }

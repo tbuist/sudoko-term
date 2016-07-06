@@ -18,6 +18,7 @@ import (
 func main() {
 
 	fmt.Println("Welcome to Terminal Sudoku. Let's begin")
+	libhelp.PrintInstructions()
 
 	//libhelp.ResizeTerm("18", "40")
 
