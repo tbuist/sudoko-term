@@ -58,33 +58,54 @@ func FillBoard_junk(board *[9][9]int) {
 	}
 }
 
-func CheckRow_valid(board *[9][9]int, row int) (bool, int) {
+// returns (true, _) if valid, returns (true, 9) if complete
+func CheckRow(board *[9][9]int, row int) (bool, int) {
+	if 0 > row || row > 8 {
+		return false, -1
+	}
+
 	count := 0
 	m := make(map[int]int)
-	for _, v := range (*board)[row] {
-		tmp, exists := m[v]
+	for i, v := range (*board)[row] {
+		_, exists := m[v]
+		if v != -1 && !exists {
+			m[i] = v
+			count++
+		}
 		if v != -1 && exists {
-			return false
+			return false, count
 		}
 	}
-	return true
+	return true, count
 }
 
-func CheckRow_complete(board *[9][9]int, row int) bool {
-	
-}
+func CheckCol(board *[9][9]int, col int) (bool, int) {
+	if 0 > col || col > 8 {
+		return false, -1
+	}
 
-func CheckCol_valid(board *[9][9]int, col int) bool {
-	return true
-}
+	count := 0
+	m := make(map[int]int)
+	for i := 0; i < 9; i++ {
+		_, exists := m[(*board)[i][col]]
+		if (*board)[i][col] != -1 && !exists {
+			m[i] = (*board)[i][col]
+			count++
+		}
+		if (*board)[i][col] != -1 && exists {
+			return false, count
+		}
+	}
+	return true, count
 
-func CheckCol_complete(board *[9][9]int, col int) bool {
-	return true
 }
 
 func CheckBoard_valid(board *[9][9]int) bool {
 	for i := 0; i < 9; i++ {
-		if !CheckRow_valid(board, i) || !CheckCol_valid(board, i) {
+		row_val, _ := CheckRow(board, i)
+		col_val, _ := CheckCol(board, i)
+		
+		if !row_val || !col_val {
 			return false
 		}
 	}
@@ -93,7 +114,10 @@ func CheckBoard_valid(board *[9][9]int) bool {
 
 func CheckBoard_complete(board *[9][9]int) bool {
 	for i := 0; i < 9; i++ {
-		if !CheckRow_complete(board, i) || !CheckCol_complete(board, i) {
+		row_val, row_count := CheckRow(board, i)
+		col_val, col_count := CheckCol(board, i)
+		
+		if !row_val || !col_val || row_count != 9 || col_count != 9 {
 			return false
 		}
 	}

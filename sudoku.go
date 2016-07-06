@@ -32,10 +32,16 @@ func main() {
 		fmt.Println("valid board")
 	}
 
+	if libhelp.CheckBoard_complete(board) {
+		fmt.Println("complete board")
+	} else {
+		fmt.Println("incomplete board")
+	}
+
 	//var input string
 	//fmt.Print("Press enter to continue...")
 	//fmt.Scanln(&input)
 	
-	libhelp.ResizeTerm("24", "80")
+	//libhelp.ResizeTerm("24", "80")
 
 }
